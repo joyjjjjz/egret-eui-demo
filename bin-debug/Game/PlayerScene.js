@@ -48,3 +48,4 @@ var PlayerScene = (function (_super) {
     return PlayerScene;
 }(eui.Component));
 __reflect(PlayerScene.prototype, "PlayerScene", ["eui.UIComponent", "egret.DisplayObject"]);
+//# sourceMappingURL=PlayerScene.js.map

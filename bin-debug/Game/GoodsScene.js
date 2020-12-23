@@ -39,3 +39,4 @@ var GoodsScene = (function (_super) {
     return GoodsScene;
 }(eui.Component));
 __reflect(GoodsScene.prototype, "GoodsScene", ["eui.UIComponent", "egret.DisplayObject"]);
+//# sourceMappingURL=GoodsScene.js.map

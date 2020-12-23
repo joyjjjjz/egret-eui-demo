@@ -35,3 +35,4 @@ var heroList_item = (function (_super) {
     return heroList_item;
 }(eui.ItemRenderer));
 __reflect(heroList_item.prototype, "heroList_item");
+//# sourceMappingURL=heroList_item.js.map

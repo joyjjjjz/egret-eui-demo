@@ -63,3 +63,4 @@ var HeroScene = (function (_super) {
     return HeroScene;
 }(eui.Component));
 __reflect(HeroScene.prototype, "HeroScene", ["eui.UIComponent", "egret.DisplayObject"]);
+//# sourceMappingURL=HeroScene.js.map
