@@ -984,13 +984,13 @@ var eui;
 /// <reference path="Validator.ts" />
 var eui;
 (function (eui) {
-    function getAssets(source, callback) {
+    function getAssets(source, callback, thisObject) {
         var adapter = egret.getImplementation("eui.IAssetAdapter");
         if (!adapter) {
             adapter = new eui.DefaultAssetAdapter();
         }
         adapter.getAsset(source, function (content) {
-            callback(content);
+            callback.call(thisObject, content);
         }, this);
     }
     eui.getAssets = getAssets;
@@ -2423,6 +2423,18 @@ var eui;
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(Group.prototype, "sh", {
+            // add by chenyingpeng
+            get: function () {
+                return this.scrollH;
+            },
+            // add by chenyingpeng
+            set: function (value) {
+                this.scrollH = value;
+            },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(Group.prototype, "scrollV", {
             /**
              * @copy eui.IViewport#scrollV
@@ -2444,6 +2456,18 @@ var eui;
                     this.$layout.scrollPositionChanged();
                 }
                 eui.PropertyEvent.dispatchPropertyEvent(this, eui.PropertyEvent.PROPERTY_CHANGE, "scrollV");
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Group.prototype, "sv", {
+            // add by chenyingpeng
+            get: function () {
+                return this.scrollV;
+            },
+            // add by chenyingpeng
+            set: function (value) {
+                this.scrollV = value;
             },
             enumerable: true,
             configurable: true
@@ -3070,6 +3094,15 @@ var eui;
                     }
                     else {
                         clazz = egret.getDefinitionByName(skinName);
+                        // add by chenyingpeng
+                        if (!clazz) {
+                            if (window["LAZY_INIT_SKIN"]) {
+                                window["LAZY_INIT_SKIN"](skinName);
+                            }
+                            if (text.toLowerCase().indexOf(".exml") == -1) {
+                                clazz = egret.getDefinitionByName(skinName);
+                            }
+                        }
                         if (!clazz && text.toLowerCase().indexOf(".exml") != -1) {
                             EXML.load(skinName, this.onExmlLoaded, this, true);
                             return;
@@ -3335,6 +3368,17 @@ var eui;
             set: function (value) {
                 value = !!value;
                 this.$setEnabled(value);
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Component.prototype, "ea", {
+            // add by chenyinigpeng
+            get: function () {
+                return this.enabled;
+            },
+            set: function (value) {
+                this.enabled = value;
             },
             enumerable: true,
             configurable: true
@@ -4054,6 +4098,14 @@ var eui;
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(DataGroup.prototype, "dp", {
+            // add by chenyingpeng
+            set: function (value) {
+                this.dataProvider = value;
+            },
+            enumerable: true,
+            configurable: true
+        });
         /**
          * @private
          *
@@ -4113,7 +4165,7 @@ var eui;
                     this.itemUpdatedHandler(event.items[0], event.location);
                     break;
                 case eui.CollectionEventKind.RESET:
-                case eui.CollectionEventKind.REFRESH:
+                case eui.CollectionEventKind.REFRESH: {
                     if (this.$layout && this.$layout.$useVirtualLayout) {
                         var indexToRenderer = this.$indexToRenderer;
                         var keys = Object.keys(indexToRenderer);
@@ -4126,6 +4178,11 @@ var eui;
                     this.$dataProviderChanged = true;
                     this.invalidateProperties();
                     break;
+                }
+                default: {
+                    egret.$warn(2204, event.kind);
+                    break;
+                }
             }
             this.invalidateSize();
             this.invalidateDisplayList();
@@ -4322,6 +4379,14 @@ var eui;
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(DataGroup.prototype, "ir", {
+            // add by chenyingpeng
+            set: function (value) {
+                this.itemRenderer = value;
+            },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(DataGroup.prototype, "itemRendererSkinName", {
             /**
              * The skinName property of the itemRenderer.This property will be passed to itemRenderer.skinName as default value,if you
@@ -4352,6 +4417,16 @@ var eui;
                     values[14 /* itemRendererSkinNameChange */] = true;
                     this.invalidateProperties();
                 }
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(DataGroup.prototype, "irsn", {
+            set: function (value) {
+                if (DataGroup.irsn_prefix) {
+                    value = DataGroup.irsn_prefix + value + ".exml";
+                }
+                this.itemRendererSkinName = value;
             },
             enumerable: true,
             configurable: true
@@ -6948,6 +7023,17 @@ var eui;
                     value.addEventListener(egret.Event.RESIZE, this.onViewportResize, this);
                 }
                 this.invalidateDisplayList();
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ScrollBarBase.prototype, "vp", {
+            // add by chenyingpeng
+            get: function () {
+                return this.viewport;
+            },
+            set: function (value) {
+                this.viewport = value;
             },
             enumerable: true,
             configurable: true
@@ -10389,8 +10475,16 @@ var eui;
             _this.sourceChanged = false;
             /**
              * @private
+             * add by chenyingpeng
+             */
+            _this.lazySourceChanged = false;
+            _this.parseSoureInCommitProperties = false;
+            _this.lazySource = false;
+            /**
+             * @private
              */
             _this._source = null;
+            _this.lazySource = Image.LAZY_SOURCE;
             _this.initializeUIValues();
             if (source) {
                 _this.source = source;
@@ -10464,7 +10558,7 @@ var eui;
                 if (value == this.$fillMode) {
                     return;
                 }
-                this.$fillMode = value;
+                _super.prototype.$setFillMode.call(this, value);
                 this.invalidateDisplayList();
             },
             enumerable: true,
@@ -10503,12 +10597,30 @@ var eui;
                 }
                 this._source = value;
                 if (this.$stage) {
-                    this.parseSource();
+                    if (this.lazySource && !this.isVisibleFromStage()) {
+                        this.sourceChanged = true;
+                        this.lazySourceChanged = true;
+                        this.letRenderDirty();
+                    }
+                    else {
+                        this.parseSource();
+                    }
                 }
                 else {
                     this.sourceChanged = true;
                     this.invalidateProperties();
                 }
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Image.prototype, "so", {
+            // add by chenyingpeng
+            get: function () {
+                return this.source;
+            },
+            set: function (value) {
+                this.source = value;
             },
             enumerable: true,
             configurable: true
@@ -10528,24 +10640,25 @@ var eui;
          * 解析source
          */
         Image.prototype.parseSource = function () {
-            var _this = this;
             this.sourceChanged = false;
+            this.lazySourceChanged = false; // add by chenyingpeng
+            this.parseSoureInCommitProperties = false; // add by chenyingpeng
             var source = this._source;
             if (source && typeof source == "string") {
                 eui.getAssets(this._source, function (data) {
-                    if (source !== _this._source)
+                    if (source !== this._source)
                         return;
                     if (!egret.is(data, "egret.Texture")) {
                         return;
                     }
-                    _this.$setTexture(data);
+                    this.$setTexture(data);
                     if (data) {
-                        _this.dispatchEventWith(egret.Event.COMPLETE);
+                        this.dispatchEventWith(egret.Event.COMPLETE);
                     }
                     else if (true) {
                         egret.$warn(2301, source);
                     }
-                });
+                }, this);
             }
             else {
                 this.$setTexture(source);
@@ -10584,7 +10697,13 @@ var eui;
          */
         Image.prototype.createChildren = function () {
             if (this.sourceChanged) {
-                this.parseSource();
+                if (this.lazySource && !this.isVisibleFromStage()) {
+                    this.lazySourceChanged = true;
+                    this.letRenderDirty();
+                }
+                else {
+                    this.parseSource();
+                }
             }
         };
         /**
@@ -10616,7 +10735,18 @@ var eui;
         Image.prototype.commitProperties = function () {
             eui.sys.UIComponentImpl.prototype["commitProperties"].call(this);
             if (this.sourceChanged) {
-                this.parseSource();
+                if (this.parseSoureInCommitProperties) {
+                    this.parseSource();
+                }
+                else {
+                    if (this.lazySource && !this.isVisibleFromStage()) {
+                        this.lazySourceChanged = true;
+                        this.letRenderDirty();
+                    }
+                    else {
+                        this.parseSource();
+                    }
+                }
             }
         };
         /**
@@ -10762,6 +10892,49 @@ var eui;
          */
         Image.prototype.getPreferredBounds = function (bounds) {
         };
+        // add by chenyingpeng
+        Image.prototype.$updateRenderNode = function () {
+            if (this.lazySource) {
+                if (this.lazySourceChanged && this.sourceChanged) {
+                    this.lazySourceChanged = false;
+                    this.parseSoureInCommitProperties = true;
+                    this.invalidateProperties();
+                }
+                _super.prototype.$updateRenderNode.call(this);
+            }
+            else {
+                _super.prototype.$updateRenderNode.call(this);
+            }
+        };
+        // add by chenyingpeng
+        Image.prototype.isVisibleFromStage = function () {
+            if (!this.$stage) {
+                return false;
+            }
+            var p = (this);
+            while (p && p != this.$stage) {
+                if (!p.visible) {
+                    return false;
+                }
+                p = p.parent;
+            }
+            return true;
+        };
+        // add by chenyingpeng
+        Image.prototype.letRenderDirty = function () {
+            this.$renderDirty = true;
+            var p = this.$parent;
+            if (p && !p.$cacheDirty) {
+                p.$cacheDirty = true;
+                p.$cacheDirtyUp();
+            }
+            var maskedObject = this.$maskedObject;
+            if (maskedObject && !maskedObject.$cacheDirty) {
+                maskedObject.$cacheDirty = true;
+                maskedObject.$cacheDirtyUp();
+            }
+        };
+        Image.LAZY_SOURCE = false;
         return Image;
     }(egret.Bitmap));
     eui.Image = Image;
@@ -12959,6 +13132,17 @@ var eui;
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(RadioButton.prototype, "ea", {
+            // add by chenyinigpeng
+            get: function () {
+                return this.enabled;
+            },
+            set: function (value) {
+                this.enabled = value;
+            },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(RadioButton.prototype, "group", {
             /**
              * The RadioButtonGroup component to which this RadioButton belongs.
@@ -13355,6 +13539,17 @@ var eui;
                 var length = buttons.length;
                 for (var i = 0; i < length; i++)
                     buttons[i].invalidateState();
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(RadioButtonGroup.prototype, "ea", {
+            // add by chenyinigpeng
+            get: function () {
+                return this.enabled;
+            },
+            set: function (value) {
+                this.enabled = value;
             },
             enumerable: true,
             configurable: true
@@ -14198,6 +14393,17 @@ var eui;
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(Scroller.prototype, "spv", {
+            // add by chenyingpeng
+            get: function () {
+                return this.scrollPolicyV;
+            },
+            set: function (value) {
+                this.scrollPolicyV = value;
+            },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(Scroller.prototype, "scrollPolicyH", {
             /**
              * Indicates under what conditions the scroller can be moved and the horizontal scroll bar is displayed.
@@ -14236,6 +14442,17 @@ var eui;
                 }
                 values[1 /* scrollPolicyH */] = value;
                 this.checkScrollPolicy();
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Scroller.prototype, "sph", {
+            // add by chenyingpeng
+            get: function () {
+                return this.scrollPolicyH;
+            },
+            set: function (value) {
+                this.scrollPolicyH = value;
             },
             enumerable: true,
             configurable: true
@@ -14304,6 +14521,17 @@ var eui;
                 values[10 /* viewport */] = value;
                 values[11 /* viewprotRemovedEvent */] = false;
                 this.installViewport();
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Scroller.prototype, "vp", {
+            // add by chenyingpeng
+            get: function () {
+                return this.viewport;
+            },
+            set: function (value) {
+                this.viewport = value;
             },
             enumerable: true,
             configurable: true
@@ -14652,7 +14880,10 @@ var eui;
          * @param scrollPos
          */
         Scroller.prototype.horizontalUpdateHandler = function (scrollPos) {
-            this.$Scroller[10 /* viewport */].scrollH = scrollPos;
+            var viewport = this.$Scroller[10 /* viewport */];
+            if (viewport) {
+                viewport.scrollH = scrollPos;
+            }
             this.dispatchEventWith(egret.Event.CHANGE);
         };
         /**
@@ -14661,7 +14892,10 @@ var eui;
          * @param scrollPos
          */
         Scroller.prototype.verticalUpdateHandler = function (scrollPos) {
-            this.$Scroller[10 /* viewport */].scrollV = scrollPos;
+            var viewport = this.$Scroller[10 /* viewport */];
+            if (viewport) {
+                viewport.scrollV = scrollPos;
+            }
             this.dispatchEventWith(egret.Event.CHANGE);
         };
         /**
@@ -15403,6 +15637,17 @@ var eui;
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(TextInput.prototype, "tc", {
+            // add by chenyingpeng
+            get: function () {
+                return this.textColor;
+            },
+            set: function (value) {
+                this.textColor = value;
+            },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(TextInput.prototype, "maxChars", {
             /**
              * @copy egret.TextField#maxChars
@@ -15527,6 +15772,18 @@ var eui;
                 }
                 this.invalidateProperties();
                 this.invalidateState();
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(TextInput.prototype, "tx", {
+            // add by chenyingpeng
+            get: function () {
+                return this.text;
+            },
+            // add by chenyingpeng
+            set: function (value) {
+                this.text = value;
             },
             enumerable: true,
             configurable: true
@@ -17425,6 +17682,17 @@ var eui;
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(ArrayCollection.prototype, "so", {
+            // add by chenyingpeng
+            get: function () {
+                return this.source;
+            },
+            set: function (value) {
+                this.source = value;
+            },
+            enumerable: true,
+            configurable: true
+        });
         /**
          * Applies the sort and filter to the view.
          * The ArrayCollection does not detect source data changes automatically,
@@ -17739,6 +18007,10 @@ var eui;
              * @private
              */
             _this.$isFocusIn = false;
+            /**
+             * @private
+             */
+            _this.$isTouchCancle = false;
             _this.initializeUIValues();
             _this.type = egret.TextFieldType.INPUT;
             _this.$EditableText = {
@@ -17822,15 +18094,19 @@ var eui;
             eui.sys.UIComponentImpl.prototype["$onAddToStage"].call(this, stage, nestLevel);
             this.addEventListener(egret.FocusEvent.FOCUS_IN, this.onfocusIn, this);
             this.addEventListener(egret.FocusEvent.FOCUS_OUT, this.onfocusOut, this);
+            this.addEventListener(egret.TouchEvent.TOUCH_BEGIN, this.onTouchBegin, this);
+            this.addEventListener(egret.TouchEvent.TOUCH_CANCEL, this.onTouchCancle, this);
         };
         /**
          * @private
          *
          */
         EditableText.prototype.$onRemoveFromStage = function () {
-            eui.sys.UIComponentImpl.prototype["$onRemoveFromStage"].call(this);
+            _super.prototype.$onRemoveFromStage.call(this);
             this.removeEventListener(egret.FocusEvent.FOCUS_IN, this.onfocusIn, this);
             this.removeEventListener(egret.FocusEvent.FOCUS_OUT, this.onfocusOut, this);
+            this.removeEventListener(egret.TouchEvent.TOUCH_BEGIN, this.onTouchBegin, this);
+            this.removeEventListener(egret.TouchEvent.TOUCH_CANCEL, this.onTouchCancle, this);
         };
         Object.defineProperty(EditableText.prototype, "prompt", {
             /**
@@ -17911,7 +18187,23 @@ var eui;
         /**
          * @private
          */
+        EditableText.prototype.onTouchBegin = function () {
+            this.$isTouchCancle = false;
+        };
+        /**
+         * @private
+         */
+        EditableText.prototype.onTouchCancle = function () {
+            this.$isTouchCancle = true;
+        };
+        /**
+         * @private
+         */
         EditableText.prototype.onfocusIn = function () {
+            if (!egret.Capabilities.isMobile && this.$isTouchCancle) {
+                this.inputUtils.stageText.$hide();
+                return;
+            }
             this.$isFocusIn = true;
             this.$isShowPrompt = false;
             this.displayAsPassword = this.$EditableText[2 /* asPassword */];
@@ -18948,6 +19240,8 @@ var eui;
                 egret.registerImplementation("eui.Theme", _this);
             }
             _this.$configURL = configURL;
+            // add by chenyingpeng
+            window["THEME_EXML_UPDATE"] = EXML.update;
             _this.load(configURL);
             return _this;
         }
@@ -20807,13 +21101,12 @@ var eui;
          * 解析source
          */
         BitmapLabel.prototype.$parseFont = function () {
-            var _this = this;
             this.$fontChanged = false;
             var font = this.$fontForBitmapLabel;
             if (typeof font == "string") {
                 eui.getAssets(font, function (bitmapFont) {
-                    _this.$setFontData(bitmapFont, font);
-                });
+                    this.$setFontData(bitmapFont, font);
+                }, this);
             }
             else {
                 this.$setFontData(font);
@@ -21225,6 +21518,8 @@ var EXML;
         }
     }
     EXML.update = update;
+    // add by chenyingpeng
+    window["EXML_UPDATE"] = update;
     /**
      * @private
      * @param url
@@ -21243,13 +21538,16 @@ var EXML;
      */
     function $parseURLContent(url, text) {
         var clazz = null;
-        if (text) {
+        if (text && typeof (text) == "string") {
             try {
                 clazz = parse(text);
             }
             catch (e) {
                 console.error(url + "\n" + e.message);
             }
+        }
+        if (text && text["prototype"]) {
+            clazz = text;
         }
         if (url) {
             if (clazz) {
@@ -21594,6 +21892,7 @@ var eui;
     locale_strings[2201] = "BasicLayout doesn't support virtualization.";
     locale_strings[2202] = "parse skinName error，the parsing result of skinName must be a instance of eui.Skin.";
     locale_strings[2203] = "Could not find the skin class '{0}'。";
+    locale_strings[2204] = "Undefined event.kind type (CollectionEventKind) = '{0}'.";
     locale_strings[2301] = "parse source failed，could not find asset from URL：{0} .";
 })(eui || (eui = {}));
 //////////////////////////////////////////////////////////////////////////////////////
@@ -21662,6 +21961,7 @@ var eui;
     locale_strings[2201] = "BasicLayout 不支持虚拟化。";
     locale_strings[2202] = "皮肤解析出错，属性 skinName 的值必须要能够解析为一个 eui.Skin 的实例。";
     locale_strings[2203] = "找不到指定的皮肤类 '{0}'。";
+    locale_strings[2204] = "未定义的event.kind类型(CollectionEventKind) = '{0}'.";
     locale_strings[2301] = "素材解析失败，找不到URL：{0} 所对应的资源。";
 })(eui || (eui = {}));
 //////////////////////////////////////////////////////////////////////////////////////

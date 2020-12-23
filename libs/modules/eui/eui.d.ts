@@ -380,7 +380,7 @@ declare namespace eui.sys {
     }
 }
 declare namespace eui {
-    function getAssets(source: string, callback: (content: any) => void): void;
+    function getAssets(source: string, callback: (content: any) => void, thisObject: any): void;
     function getTheme(source: string, callback: (content: any) => void): void;
     /**
      * The UIComponent class is the base class for all visual components, both skinnable and nonskinnable.
@@ -625,6 +625,7 @@ declare namespace eui {
         /**
          * Number that specifies the explicit width of the component,
          * in pixels, in the component's coordinates.
+         * @readOnly
          * @version Egret 2.4
          * @version eui 1.0
          * @platform Web,Native
@@ -632,12 +633,13 @@ declare namespace eui {
          */
         /**
          * 外部显式指定的宽度。
+         * @readOnly
          * @version Egret 2.4
          * @version eui 1.0
          * @platform Web,Native
          * @language zh_CN
          */
-        explicitWidth: number;
+        readonly explicitWidth: number;
         /**
          * Number that specifies the explicit height of the component,
          * in pixels, in the component's coordinates.
@@ -655,7 +657,7 @@ declare namespace eui {
          * @platform Web,Native
          * @language zh_CN
          */
-        explicitHeight: number;
+        readonly explicitHeight: number;
         /**
          * The minimum recommended width of the component to be considered
          * by the parent during layout. This value is in the
@@ -1575,6 +1577,7 @@ declare namespace eui {
          * @platform Web,Native
          */
         scrollH: number;
+        sh: number;
         /**
          * @copy eui.IViewport#scrollV
          *
@@ -1583,6 +1586,7 @@ declare namespace eui {
          * @platform Web,Native
          */
         scrollV: number;
+        sv: number;
         /**
          * @private
          *
@@ -2298,6 +2302,7 @@ declare namespace eui {
          * @language zh_CN
          */
         enabled: boolean;
+        ea: boolean;
         /**
          * @private
          *
@@ -2844,6 +2849,7 @@ declare namespace eui {
          * @language zh_CN
          */
         dataProvider: ICollection;
+        dp: ICollection;
         /**
          * @private
          *
@@ -2979,6 +2985,7 @@ declare namespace eui {
          * @language zh_CN
          */
         itemRenderer: any;
+        ir: any;
         /**
          * The skinName property of the itemRenderer.This property will be passed to itemRenderer.skinName as default value,if you
          * did not set it explicitly.<br>
@@ -2997,6 +3004,8 @@ declare namespace eui {
          * @language zh_CN
          */
         itemRendererSkinName: any;
+        static irsn_prefix: string;
+        irsn: any;
         /**
          * Function that returns an item renderer for a
          * specific item.
@@ -4698,6 +4707,7 @@ declare namespace eui {
          * @language zh_CN
          */
         viewport: IViewport;
+        vp: IViewport;
         /**
          * @private
          *
@@ -6228,6 +6238,14 @@ declare namespace eui {
         private sourceChanged;
         /**
          * @private
+         * add by chenyingpeng
+         */
+        private lazySourceChanged;
+        private parseSoureInCommitProperties;
+        static LAZY_SOURCE: boolean;
+        private lazySource;
+        /**
+         * @private
          */
         private _source;
         /**
@@ -6248,6 +6266,7 @@ declare namespace eui {
          * @language zh_CN
          */
         source: string | egret.Texture;
+        so: string | egret.Texture;
         $setTexture(value: egret.Texture): boolean;
         /**
          * @private
@@ -6543,6 +6562,9 @@ declare namespace eui {
          * @platform Web,Native
          */
         getPreferredBounds(bounds: egret.Rectangle): void;
+        $updateRenderNode(): void;
+        private isVisibleFromStage();
+        private letRenderDirty();
     }
 }
 declare namespace eui {
@@ -7903,6 +7925,7 @@ declare namespace eui {
          * @language zh_CN
          */
         enabled: boolean;
+        ea: boolean;
         /**
          * @private
          */
@@ -8143,6 +8166,7 @@ declare namespace eui {
          * @language zh_CN
          */
         enabled: boolean;
+        ea: boolean;
         /**
          * The number of RadioButtons that belong to this RadioButtonGroup.
          *
@@ -8617,6 +8641,7 @@ declare namespace eui {
          * @language zh_CN
          */
         scrollPolicyV: string;
+        spv: string;
         /**
          * Indicates under what conditions the scroller can be moved and the horizontal scroll bar is displayed.
          * <p><code>ScrollPolicy.ON</code> - the scroller can be moved, and the scroll bar is displayed when it's move.</p>
@@ -8645,6 +8670,7 @@ declare namespace eui {
          * @language zh_CN
          */
         scrollPolicyH: string;
+        sph: string;
         /**
          * Stop the scroller animation
          * @version Egret 3.0.2
@@ -8678,6 +8704,7 @@ declare namespace eui {
          * @language zh_CN
          */
         viewport: IViewport;
+        vp: IViewport;
         /**
          * @private
          * 安装并初始化视域组件
@@ -9325,6 +9352,7 @@ declare namespace eui {
          * @platform Web,Native
          */
         textColor: number;
+        tc: number;
         /**
          * @copy egret.TextField#maxChars
          *
@@ -9385,6 +9413,7 @@ declare namespace eui {
          * @platform Web,Native
          */
         text: string;
+        tx: string;
         /**
          * @copy egret.TextField#restrict
          *
@@ -10337,6 +10366,7 @@ declare namespace eui {
          * @language zh_CN
          */
         source: any[];
+        so: any[];
         /**
          * Applies the sort and filter to the view.
          * The ArrayCollection does not detect source data changes automatically,
@@ -10659,6 +10689,18 @@ declare namespace eui {
          * @private
          */
         private onfocusOut();
+        /**
+         * @private
+         */
+        private $isTouchCancle;
+        /**
+         * @private
+         */
+        private onTouchBegin();
+        /**
+         * @private
+         */
+        private onTouchCancle();
         /**
          * @private
          */
@@ -11205,6 +11247,7 @@ declare namespace eui {
          * @language zh_CN
          */
         text: string;
+        tx: string;
     }
 }
 declare namespace eui {
@@ -11389,6 +11432,7 @@ declare namespace eui {
          * @language zh_CN
          */
         scrollH: number;
+        sh: number;
         /**
          * The y coordinate of the origin of the viewport in the component's coordinate system,
          * where the default value is (0,0) corresponding to the upper-left corner of the component.
@@ -11405,6 +11449,7 @@ declare namespace eui {
          * @language zh_CN
          */
         scrollV: number;
+        sv: number;
         /**
          * If <code>true</code>, specifies to clip the children to the boundaries of the viewport.
          * If <code>false</code>, the container children extend past the container boundaries,
@@ -11916,7 +11961,7 @@ declare namespace eui {
          * @platform Web,Native
          * @language zh_CN
          */
-        static ADD: string;
+        static readonly ADD: string;
         /**
          * Indicates that the collection applied a sort, a filter, or both.
          * This change can potentially be easier to handle than a RESET.
@@ -11932,7 +11977,7 @@ declare namespace eui {
          * @platform Web,Native
          * @language zh_CN
          */
-        static REFRESH: string;
+        static readonly REFRESH: string;
         /**
          * Indicates that the collection removed an item or items.
          * @version Egret 2.4
@@ -11947,7 +11992,7 @@ declare namespace eui {
          * @platform Web,Native
          * @language zh_CN
          */
-        static REMOVE: string;
+        static readonly REMOVE: string;
         /**
          * Indicates that the item at the position identified by the
          * CollectionEvent <code>location</code> property has been replaced.
@@ -11963,7 +12008,7 @@ declare namespace eui {
          * @platform Web,Native
          * @language zh_CN
          */
-        static REPLACE: string;
+        static readonly REPLACE: string;
         /**
          * Indicates that the collection has changed so drastically that
          * a reset is required.
@@ -11979,7 +12024,7 @@ declare namespace eui {
          * @platform Web,Native
          * @language zh_CN
          */
-        static RESET: string;
+        static readonly RESET: string;
         /**
          * Indicates that one or more items were updated within the collection.
          * The affected item(s)
@@ -11996,7 +12041,7 @@ declare namespace eui {
          * @platform Web,Native
          * @language zh_CN
          */
-        static UPDATE: string;
+        static readonly UPDATE: string;
     }
 }
 declare namespace eui {
@@ -13227,7 +13272,7 @@ declare namespace EXML {
     /**
      * @private
      */
-    function $parseURLContent(url: string, text: string): any;
+    function $parseURLContent(url: string, text: string | any): any;
 }
 declare namespace eui.sys {
     /**
